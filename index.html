@@ -34,13 +34,13 @@
 
     <div class="max-w-md w-full text-center">
         <h1 class="text-4xl font-bold text-slate-800 mb-2">משימת הגירוד</h1>
-        <p class="text-indigo-600 mb-8 text-xl font-semibold">גרדו את הכרטיס כדי לגלות את הקוד לחידה הבאה!</p>
+        <p class="text-indigo-600 mb-8 text-xl font-semibold">גרדו את כל הכרטיס כדי לגלות את הקוד לחידה הבאה!</p>
 
         <!-- Card Area -->
         <div class="relative mx-auto w-80 h-80 sm:w-96 sm:h-96 bg-white rounded-3xl shadow-2xl overflow-hidden border-8 border-white scratch-container">
             
             <!-- Target Image (pic.png) -->
-            <img src="pic.png" alt="[Image of pic.png]" id="prize-image" 
+            <img src="pic.png" alt="[תמונת הפרס]" id="prize-image" 
                  class="absolute inset-0 w-full h-full object-cover select-none"
                  onerror="handleImageError(this)">
             
@@ -66,6 +66,7 @@
         const ctx = canvas.getContext('2d');
         const finishMsg = document.getElementById('finish-msg');
         const victorySound = document.getElementById('victory-sound');
+        const prizeImg = document.getElementById('prize-image');
         let isDrawing = false;
         let isFinished = false;
         let lastX = 0;
@@ -79,7 +80,6 @@
 
             ctx.globalCompositeOperation = 'source-over';
             
-            // Metallic/Gray cover
             const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
             gradient.addColorStop(0, '#94a3b8');
             gradient.addColorStop(0.5, '#475569');
@@ -88,12 +88,11 @@
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Instructions on the scratch layer
             ctx.font = 'bold 30px Assistant';
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText('גרד כאן לחשיפה!', canvas.width / 2, canvas.height / 2);
+            ctx.fillText('גרד את הכל!', canvas.width / 2, canvas.height / 2);
 
             ctx.globalCompositeOperation = 'destination-out';
             ctx.lineJoin = 'round';
@@ -101,9 +100,14 @@
             ctx.lineWidth = brushRadius * 2;
         }
 
+        // Modified error handler to log only once
+        let errorLogged = false;
         function handleImageError(img) {
-            console.error("Image pic.png not found in the same directory.");
-            img.src = 'https://via.placeholder.com/400x400?text=%D7%AA%D7%9E%D7%95%D7%A0%D7%94+pic.png+%D7%97%D7%A1%D7%A8%D7%94';
+            if (!errorLogged) {
+                console.warn("שימו לב: הקובץ pic.png לא נמצא בתיקייה. הקוד יציג תמונה חלופית עד שתעלו את הקובץ.");
+                errorLogged = true;
+            }
+            img.src = 'https://via.placeholder.com/400x400?text=%D7%97%D7%A1%D7%A8+%D7%A7%D7%95%D7%91%D7%A5+pic.png';
         }
 
         function getPos(e) {
@@ -159,29 +163,23 @@
 
             const percentage = (clearPixels / (pixels.length / 4)) * 100;
             
-            // We only reveal and sound the alarm at the very end (above 85%)
-            if (percentage > 85) {
+            if (percentage >= 98) {
                 isFinished = true;
                 
-                // Play sound
-                victorySound.play().catch(err => console.log("Audio play blocked by browser"));
+                victorySound.play().catch(err => console.log("צליל נחסם על ידי הדפדפן"));
                 
-                // Reveal code
                 finishMsg.style.opacity = '1';
                 finishMsg.style.pointerEvents = 'auto';
                 
-                // Fade out canvas
-                canvas.style.transition = 'opacity 1.5s ease';
+                canvas.style.transition = 'opacity 1s ease';
                 canvas.style.opacity = '0';
             }
         }
 
-        // Mouse Events
         canvas.addEventListener('mousedown', startDrawing);
         window.addEventListener('mousemove', scratch);
         window.addEventListener('mouseup', stopDrawing);
 
-        // Touch Events
         canvas.addEventListener('touchstart', startDrawing);
         canvas.addEventListener('touchmove', scratch);
         canvas.addEventListener('touchend', stopDrawing);
